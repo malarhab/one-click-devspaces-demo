@@ -165,10 +165,10 @@ commands:
 
 events:
   # Post-start events (run after workspace starts)
-  postStart:
-    - install-dependencies
-    # Removed init-database from post-start to avoid timing issues
-    # Database initialization should be run manually after workspace is ready
+  postStart: []
+    # Removed install-dependencies from post-start to avoid timing issues
+    # Dependencies should be installed manually after workspace is ready
+    # Use the "Install Dependencies" command or run: npm install
 
   # Pre-stop events (run before workspace stops)
   preStop: []
