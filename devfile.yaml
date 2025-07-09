@@ -108,6 +108,48 @@ commands:
         kind: build
         isDefault: false
 
+  # Initialize database with wait (safer alternative)
+  - id: init-database-safe
+    exec:
+      label: Initialize Database (Wait for DB)
+      component: nodejs
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: |
+        echo "Waiting for PostgreSQL to be ready..."
+        node -e "
+        const { Pool } = require('pg');
+        const pool = new Pool({
+          user: process.env.DB_USER || 'postgres',
+          host: process.env.DB_HOST || 'localhost',
+          database: process.env.DB_NAME || 'secret_app',
+          password: process.env.DB_PASSWORD || 'password',
+          port: process.env.DB_PORT || 5432,
+        });
+        
+        async function waitForDB() {
+          let attempts = 0;
+          while (attempts < 30) {
+            try {
+              await pool.query('SELECT 1');
+              console.log('PostgreSQL is ready!');
+              await pool.end();
+              process.exit(0);
+            } catch (err) {
+              attempts++;
+              console.log('PostgreSQL is unavailable - sleeping (' + attempts + '/30)');
+              await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+          }
+          console.error('PostgreSQL failed to become ready after 30 attempts');
+          process.exit(1);
+        }
+        
+        waitForDB();
+        " && npm run init-db
+      group:
+        kind: build
+        isDefault: false
+
 
   # Clean install (remove node_modules and reinstall)
   - id: clean-install
@@ -125,7 +167,8 @@ events:
   # Post-start events (run after workspace starts)
   postStart:
     - install-dependencies
-    - init-database
+    # Removed init-database from post-start to avoid timing issues
+    # Database initialization should be run manually after workspace is ready
 
   # Pre-stop events (run before workspace stops)
   preStop: []
