@@ -16,7 +16,7 @@ components:
   - name: nodejs
     container:
       image: node:18-alpine
-      memoryLimit: 1Gi
+      memoryLimit: 2Gi
       mountSources: true
       sourceMapping: /project
       command: ['tail']
@@ -45,17 +45,12 @@ components:
           targetPort: 9229
           exposure: internal
           protocol: tcp
-      volumeMounts:
-        - name: npm-cache
-          path: /root/.npm
-        - name: node-modules
-          path: /project/node_modules
 
   # PostgreSQL database container
   - name: postgres
     container:
       image: postgres:15-alpine
-      memoryLimit: 512Mi
+      memoryLimit: 1Gi
       env:
         - name: POSTGRES_DB
           value: secret_app
@@ -63,29 +58,11 @@ components:
           value: postgres
         - name: POSTGRES_PASSWORD
           value: secretpassword
-        - name: PGDATA
-          value: /var/lib/postgresql/data/pgdata
       endpoints:
         - name: postgres
           targetPort: 5432
           exposure: internal
           protocol: tcp
-      volumeMounts:
-        - name: postgres-data
-          path: /var/lib/postgresql/data
-
-  # Persistent volumes
-  - name: postgres-data
-    volume:
-      size: 1Gi
-
-  - name: npm-cache
-    volume:
-      size: 500Mi
-
-  - name: node-modules
-    volume:
-      size: 500Mi
 
 commands:
   # Install dependencies
@@ -110,73 +87,17 @@ commands:
         kind: build
         isDefault: false
 
-  # Initialize database with wait (safer alternative)
-  - id: init-database-safe
+  # Start the application
+  - id: start-app
     exec:
-      label: Initialize Database (Wait for DB)
+      label: Start Application
       component: nodejs
       workingDir: ${PROJECT_SOURCE}
-      commandLine: |
-        echo "Waiting for PostgreSQL to be ready..."
-        node -e "
-        const { Pool } = require('pg');
-        const pool = new Pool({
-          user: process.env.DB_USER || 'postgres',
-          host: process.env.DB_HOST || 'localhost',
-          database: process.env.DB_NAME || 'secret_app',
-          password: process.env.DB_PASSWORD || 'password',
-          port: process.env.DB_PORT || 5432,
-        });
-        
-        async function waitForDB() {
-          let attempts = 0;
-          while (attempts < 30) {
-            try {
-              await pool.query('SELECT 1');
-              console.log('PostgreSQL is ready!');
-              await pool.end();
-              process.exit(0);
-            } catch (err) {
-              attempts++;
-              console.log('PostgreSQL is unavailable - sleeping (' + attempts + '/30)');
-              await new Promise(resolve => setTimeout(resolve, 2000));
-            }
-          }
-          console.error('PostgreSQL failed to become ready after 30 attempts');
-          process.exit(1);
-        }
-        
-        waitForDB();
-        " && npm run init-db
+      commandLine: npm start
       group:
-        kind: build
-        isDefault: false
-
-
-  # Clean install (remove node_modules and reinstall)
-  - id: clean-install
-    exec:
-      label: Clean Install
-      component: nodejs
-      workingDir: ${PROJECT_SOURCE}
-      commandLine: rm -rf node_modules package-lock.json && npm install
-      group:
-        kind: build
-        isDefault: false
-
-
+        kind: run
+        isDefault: true
 
 attributes:
   # Configure the development environment
-  controller.devfile.io/merge-user-defined-env-vars: true
-  
-  # Let OpenShift handle security context automatically
-  # Removed controller.devfile.io/scc: container-build
-  
-  # Remove restrictive security context - let OpenShift assign appropriate values
-  # pod-overrides:
-  #   spec:
-  #     securityContext:
-  #       runAsUser: 1000
-  #       runAsGroup: 1000
-  #       fsGroup: 1000 
+  controller.devfile.io/merge-user-defined-env-vars: true 
