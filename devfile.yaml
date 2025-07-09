@@ -48,6 +48,12 @@ components:
     container:
       image: postgres:15-alpine
       memoryLimit: 1Gi
+      memoryRequest: 256Mi
+      cpuRequest: 200m
+      cpuLimit: 500m
+      volumeMounts:
+        - name: postgres-data
+          path: /var/lib/postgresql/data
       env:
         - name: POSTGRES_DB
           value: secret_app
@@ -55,11 +61,18 @@ components:
           value: postgres
         - name: POSTGRES_PASSWORD
           value: secretpassword
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
       endpoints:
         - name: postgres
           targetPort: 5432
           exposure: internal
           protocol: tcp
+
+  # Persistent volume for PostgreSQL data
+  - name: postgres-data
+    volume:
+      size: 1Gi
 
 commands:
   # Install dependencies
