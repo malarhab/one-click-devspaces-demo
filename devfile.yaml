@@ -1,0 +1,210 @@
+schemaVersion: 2.2.0
+metadata:
+  name: secret-phrase-app
+  displayName: Secret Phrase Access App
+  description: A secure Node.js application with PostgreSQL backend for password-based secret access
+  tags:
+    - NodeJS
+    - Express
+    - PostgreSQL
+    - Authentication
+  attributes:
+    controller.devfile.io/storage-type: per-workspace
+
+components:
+  # Node.js runtime container
+  - name: nodejs
+    container:
+      image: node:18-alpine
+      memoryLimit: 1Gi
+      mountSources: true
+      sourceMapping: /project
+      env:
+        - name: NODE_ENV
+          value: development
+        - name: DB_HOST
+          value: postgres
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_NAME
+          value: secret_app
+        - name: DB_USER
+          value: postgres
+        - name: DB_PASSWORD
+          value: secretpassword
+        - name: PORT
+          value: "3000"
+      endpoints:
+        - name: nodejs-app
+          targetPort: 3000
+          exposure: public
+          protocol: http
+        - name: nodejs-debug
+          targetPort: 9229
+          exposure: internal
+          protocol: tcp
+      volumeMounts:
+        - name: npm-cache
+          path: /root/.npm
+        - name: node-modules
+          path: /project/node_modules
+
+  # PostgreSQL database container
+  - name: postgres
+    container:
+      image: postgres:15-alpine
+      memoryLimit: 512Mi
+      env:
+        - name: POSTGRES_DB
+          value: secret_app
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          value: secretpassword
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+      endpoints:
+        - name: postgres
+          targetPort: 5432
+          exposure: internal
+          protocol: tcp
+      volumeMounts:
+        - name: postgres-data
+          path: /var/lib/postgresql/data
+
+  # Persistent volumes
+  - name: postgres-data
+    volume:
+      size: 1Gi
+
+  - name: npm-cache
+    volume:
+      size: 500Mi
+
+  - name: node-modules
+    volume:
+      size: 500Mi
+
+commands:
+  # Install dependencies
+  - id: install-dependencies
+    exec:
+      label: Install Dependencies
+      component: nodejs
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: npm install
+      group:
+        kind: build
+        isDefault: false
+
+  # Initialize database
+  - id: init-database
+    exec:
+      label: Initialize Database
+      component: nodejs
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: npm run init-db
+      group:
+        kind: build
+        isDefault: false
+
+  # Start application in development mode
+  - id: dev-run
+    exec:
+      label: Start Development Server
+      component: nodejs
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: npm run dev
+      group:
+        kind: run
+        isDefault: true
+
+  # Start application in production mode
+  - id: prod-run
+    exec:
+      label: Start Production Server
+      component: nodejs
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: npm start
+      group:
+        kind: run
+        isDefault: false
+
+  # Debug application
+  - id: debug-run
+    exec:
+      label: Start Debug Server
+      component: nodejs
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: node --inspect=0.0.0.0:9229 server.js
+      group:
+        kind: debug
+        isDefault: true
+
+  # Health check
+  - id: health-check
+    exec:
+      label: Health Check
+      component: nodejs
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: curl -f http://localhost:3000/health || exit 1
+      group:
+        kind: test
+        isDefault: false
+
+  # Database connection test
+  - id: test-db-connection
+    exec:
+      label: Test Database Connection
+      component: postgres
+      commandLine: pg_isready -h localhost -p 5432 -U postgres
+      group:
+        kind: test
+        isDefault: false
+
+  # Clean install (remove node_modules and reinstall)
+  - id: clean-install
+    exec:
+      label: Clean Install
+      component: nodejs
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: rm -rf node_modules package-lock.json && npm install
+      group:
+        kind: build
+        isDefault: false
+
+  # View application logs
+  - id: view-logs
+    exec:
+      label: View Application Logs
+      component: nodejs
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: tail -f /dev/null
+      group:
+        kind: run
+        isDefault: false
+
+events:
+  # Post-start events (run after workspace starts)
+  postStart:
+    - install-dependencies
+    - init-database
+
+  # Pre-stop events (run before workspace stops)
+  preStop: []
+
+attributes:
+  # Configure the development environment
+  controller.devfile.io/merge-user-defined-env-vars: true
+  controller.devfile.io/scc: container-build
+  
+  # Persistence configuration
+  controller.devfile.io/storage-type: per-workspace
+  
+  # Security context
+  pod-overrides:
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000 
