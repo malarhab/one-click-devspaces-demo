@@ -1,55 +1,54 @@
 const { Pool } = require('pg');
-const bcrypt = require('bcrypt');
-require('dotenv').config();
 
-// PostgreSQL connection
+// Database connection configuration
 const pool = new Pool({
-  user: process.env.DB_USER || 'postgres',
-  host: process.env.DB_HOST || 'localhost',
-  database: process.env.DB_NAME || 'secret_app',
-  password: process.env.DB_PASSWORD || 'password',
-  port: process.env.DB_PORT || 5432,
+  user: process.env.POSTGRES_USER || 'postgres',
+  host: process.env.POSTGRES_HOST || 'postgres',
+  database: process.env.POSTGRES_DB || 'todoapp',
+  password: process.env.POSTGRES_PASSWORD || 'password',
+  port: process.env.POSTGRES_PORT || 5432,
 });
 
 async function initializeDatabase() {
   try {
     console.log('Initializing database...');
     
-    // Create secrets table
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS secrets (
+    // Create the todos table if it doesn't exist
+    const createTableQuery = `
+      CREATE TABLE IF NOT EXISTS todos (
         id SERIAL PRIMARY KEY,
-        password_hash VARCHAR(255) NOT NULL,
-        secret_phrase TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
+        text TEXT NOT NULL,
+        completed BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
     
-    // Check if there's already a secret configured
-    const existingSecret = await pool.query('SELECT id FROM secrets WHERE id = 1');
+    await pool.query(createTableQuery);
+    console.log('Database initialized successfully!');
     
-    if (existingSecret.rows.length === 0) {
-      // Hash the default password
-      const defaultPassword = 'mysecretpassword123'; // Change this to your desired password
-      const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(defaultPassword, saltRounds);
+    // Insert some sample data
+    const sampleTodos = [
+      { text: 'Learn Node.js', completed: false },
+      { text: 'Build a to-do app', completed: false },
+      { text: 'Deploy to OpenShift', completed: false }
+    ];
+    
+    for (const todo of sampleTodos) {
+      const checkQuery = 'SELECT COUNT(*) FROM todos WHERE text = $1';
+      const result = await pool.query(checkQuery, [todo.text]);
       
-      // Insert default secret
-      await pool.query(`
-        INSERT INTO secrets (id, password_hash, secret_phrase)
-        VALUES (1, $1, $2)
-      `, [hashedPassword, 'The secret phrase is: "Welcome to the hidden world of secrets! 🔐"']);
-      
-      console.log('✓ Database initialized successfully!');
-      console.log('✓ Default password: mysecretpassword123');
-      console.log('✓ Secret phrase configured');
-    } else {
-      console.log('✓ Database already initialized');
+      if (parseInt(result.rows[0].count) === 0) {
+        const insertQuery = 'INSERT INTO todos (text, completed) VALUES ($1, $2)';
+        await pool.query(insertQuery, [todo.text, todo.completed]);
+        console.log(`Added sample todo: ${todo.text}`);
+      }
     }
+    
+    console.log('Database setup complete!');
     
   } catch (error) {
     console.error('Error initializing database:', error);
-    process.exit(1);
   } finally {
     await pool.end();
   }

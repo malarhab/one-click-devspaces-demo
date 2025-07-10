@@ -1,112 +1,69 @@
 schemaVersion: 2.2.0
 metadata:
-  name: secret-phrase-app
-  displayName: Secret Phrase Access App
-  description: A secure Node.js application with PostgreSQL backend for password-based secret access
-  tags:
-    - NodeJS
-    - Express
-    - PostgreSQL
-    - Authentication
-  attributes:
-    controller.devfile.io/storage-type: per-workspace
+  name: todo-app
 
 components:
-  # Node.js runtime container
-  - name: tools
+  - name: nodejs
     container:
-      image: quay.io/devfile/universal-developer-image:ubi9-latest
-      memoryLimit: 6G
-      memoryRequest: 512Mi
-      cpuRequest: 1000m
-      cpuLimit: 4000m
+      image: node:18
       mountSources: true
+      sourceMapping: /projects
+      endpoints:
+        - name: web
+          targetPort: 3000
+          protocol: http
+          exposure: public
       env:
+        - name: DATABASE_URL
+          value: postgres://postgres:password@postgres:5432/todoapp
         - name: NODE_ENV
           value: development
-        - name: DB_HOST
-          value: postgres
-        - name: DB_PORT
-          value: "5432"
-        - name: DB_NAME
-          value: secret_app
-        - name: DB_USER
-          value: postgres
-        - name: DB_PASSWORD
-          value: secretpassword
-        - name: PORT
-          value: "3000"
-      endpoints:
-        - name: nodejs-app
-          targetPort: 3000
-          exposure: public
-          protocol: http
+      workingDir: /projects
+      command: ['/bin/sh']
+      args: ['-c', 'tail -f /dev/null']
 
-
-  # PostgreSQL database container
   - name: postgres
     container:
-      image: postgres:15-alpine
-      memoryLimit: 1Gi
-      memoryRequest: 256Mi
-      cpuRequest: 200m
-      cpuLimit: 500m
-      volumeMounts:
-        - name: postgres-data
-          path: /var/lib/postgresql/data
+      image: postgres:13
       env:
         - name: POSTGRES_DB
-          value: secret_app
+          value: todoapp
         - name: POSTGRES_USER
           value: postgres
         - name: POSTGRES_PASSWORD
-          value: secretpassword
-        - name: PGDATA
-          value: /var/lib/postgresql/data/pgdata
+          value: password
       endpoints:
-        - name: postgres
+        - name: database
           targetPort: 5432
-          exposure: internal
           protocol: tcp
+          exposure: internal
+      volumeMounts:
+        - name: postgres-data
+          path: /var/lib/postgresql/data
 
-  # Persistent volume for PostgreSQL data
   - name: postgres-data
     volume:
       size: 1Gi
 
 commands:
-  # Install dependencies
-  - id: install-dependencies
+  - id: install-deps
     exec:
-      label: Install Dependencies
-      component: tools
-      workingDir: ${PROJECT_SOURCE}
+      component: nodejs
       commandLine: npm install
-      group:
-        kind: build
-        isDefault: false
+      workingDir: /projects
 
-  # Initialize database
-  - id: init-database
+  - id: start-dev
     exec:
-      label: Initialize Database
-      component: tools
-      workingDir: ${PROJECT_SOURCE}
-      commandLine: npm run init-db
-      group:
-        kind: build
-        isDefault: false
+      component: nodejs
+      commandLine: npm run dev
+      workingDir: /projects
 
-  # Start the application
-  - id: start-app
+  - id: init-db
     exec:
-      label: Start Application
-      component: tools
-      workingDir: ${PROJECT_SOURCE}
-      commandLine: npm start
-      group:
-        kind: run
-        isDefault: true
+      component: nodejs
+      commandLine: node init-db.js
+      workingDir: /projects
 
-attributes:
-  controller.devfile.io/merge-user-defined-env-vars: true 
+events:
+  postStart:
+    - install-deps 

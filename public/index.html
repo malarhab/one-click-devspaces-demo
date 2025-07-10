@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secret Phrase Access</title>
+    <title>To-Do App</title>
     <style>
         * {
             margin: 0;
@@ -12,271 +12,472 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             padding: 20px;
         }
 
         .container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
             border-radius: 20px;
-            padding: 40px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
             text-align: center;
-            transition: transform 0.3s ease;
         }
 
-        .container:hover {
-            transform: translateY(-5px);
-        }
-
-        .lock-icon {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            color: #667eea;
-        }
-
-        h1 {
-            color: #333;
+        .header h1 {
+            font-size: 2.5em;
             margin-bottom: 10px;
-            font-size: 2rem;
-            font-weight: 600;
+            font-weight: 300;
         }
 
-        .subtitle {
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 1rem;
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .todo-form {
+            padding: 30px;
+            border-bottom: 1px solid #eee;
         }
 
         .form-group {
-            margin-bottom: 20px;
-            text-align: left;
+            display: flex;
+            gap: 15px;
+            align-items: center;
         }
 
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 500;
-        }
-
-        input[type="password"] {
-            width: 100%;
+        #todoInput {
+            flex: 1;
             padding: 15px;
             border: 2px solid #e0e0e0;
             border-radius: 10px;
             font-size: 16px;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-            background: rgba(255, 255, 255, 0.9);
+            transition: border-color 0.3s ease;
         }
 
-        input[type="password"]:focus {
+        #todoInput:focus {
             outline: none;
             border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
-        .submit-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+        .btn {
+            padding: 15px 25px;
             border: none;
-            padding: 15px 30px;
             border-radius: 10px;
+            cursor: pointer;
             font-size: 16px;
             font-weight: 600;
-            cursor: pointer;
             transition: all 0.3s ease;
-            width: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #dee2e6;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+
+        .todos-container {
+            padding: 30px;
+        }
+
+        .todos-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .todos-header h2 {
+            color: #333;
+            font-size: 1.5em;
+        }
+
+        .stats {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .todo-item {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .todo-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .todo-item.completed {
+            opacity: 0.7;
+            border-left-color: #28a745;
+        }
+
+        .todo-item.completed .todo-text {
+            text-decoration: line-through;
+            color: #6c757d;
+        }
+
+        .todo-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .todo-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .todo-text {
+            flex: 1;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .todo-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .todo-date {
+            font-size: 0.8em;
+            color: #999;
             margin-top: 10px;
         }
 
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        .empty-state {
+            text-align: center;
+            padding: 60px 30px;
+            color: #666;
         }
 
-        .submit-btn:active {
-            transform: translateY(0);
-        }
-
-        .submit-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .message {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 10px;
-            font-weight: 500;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: all 0.3s ease;
-        }
-
-        .message.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .message.success {
-            background: rgba(76, 175, 80, 0.1);
-            color: #4caf50;
-            border: 1px solid rgba(76, 175, 80, 0.3);
-        }
-
-        .message.error {
-            background: rgba(244, 67, 54, 0.1);
-            color: #f44336;
-            border: 1px solid rgba(244, 67, 54, 0.3);
-        }
-
-        .secret-phrase {
-            font-size: 1.2rem;
-            line-height: 1.6;
-            word-wrap: break-word;
+        .empty-state h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: #999;
         }
 
         .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
+            text-align: center;
+            padding: 40px;
+            color: #666;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 30px;
+            border: 1px solid #f5c6cb;
         }
 
-        .health-status {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 10px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 500;
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 30px;
+            border: 1px solid #c3e6cb;
         }
 
-        .health-status.healthy {
-            background: rgba(76, 175, 80, 0.1);
-            color: #4caf50;
-            border: 1px solid rgba(76, 175, 80, 0.3);
-        }
+        @media (max-width: 600px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+            }
 
-        .health-status.unhealthy {
-            background: rgba(244, 67, 54, 0.1);
-            color: #f44336;
-            border: 1px solid rgba(244, 67, 54, 0.3);
+            .form-group {
+                flex-direction: column;
+            }
+
+            #todoInput {
+                width: 100%;
+            }
+
+            .todos-header {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+
+            .todo-actions {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="health-status" id="healthStatus">Checking...</div>
-    
     <div class="container">
-        <div class="lock-icon">🔐</div>
-        <h1>Secret Access</h1>
-        <p class="subtitle">Enter the password to reveal the secret phrase</p>
-        
-        <form id="authForm">
+        <div class="header">
+            <h1>To-Do App</h1>
+            <p>Stay organized and get things done</p>
+        </div>
+
+        <div class="todo-form">
             <div class="form-group">
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required placeholder="Enter your password">
+                <input type="text" id="todoInput" placeholder="Add a new task..." maxlength="255">
+                <button class="btn btn-primary" onclick="addTodo()">Add Task</button>
             </div>
-            
-            <button type="submit" class="submit-btn" id="submitBtn">
-                <span id="submitText">Unlock Secret</span>
-            </button>
-        </form>
-        
-        <div id="message" class="message"></div>
+        </div>
+
+        <div class="todos-container">
+            <div class="todos-header">
+                <h2>Your Tasks</h2>
+                <div class="stats">
+                    <span id="todoStats">0 tasks</span>
+                </div>
+            </div>
+
+            <div id="todosList"></div>
+        </div>
     </div>
 
     <script>
-        // Check health status on load
-        checkHealth();
+        let todos = [];
 
-        document.getElementById('authForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+        // Load todos when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTodos();
             
-            const password = document.getElementById('password').value;
-            const submitBtn = document.getElementById('submitBtn');
-            const submitText = document.getElementById('submitText');
-            const messageDiv = document.getElementById('message');
-            
-            // Show loading state
-            submitBtn.disabled = true;
-            submitText.innerHTML = '<span class="loading"></span> Authenticating...';
-            messageDiv.classList.remove('show');
-            
+            // Add enter key support for input
+            document.getElementById('todoInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addTodo();
+                }
+            });
+        });
+
+        // Load todos from the API
+        async function loadTodos() {
             try {
-                const response = await fetch('/authenticate', {
+                showLoading();
+                const response = await fetch('/api/todos');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch todos');
+                }
+                todos = await response.json();
+                renderTodos();
+            } catch (error) {
+                console.error('Error loading todos:', error);
+                showError('Failed to load todos. Please try again.');
+            }
+        }
+
+        // Add a new todo
+        async function addTodo() {
+            const input = document.getElementById('todoInput');
+            const text = input.value.trim();
+            
+            if (!text) {
+                showError('Please enter a task description');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/todos', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ password }),
+                    body: JSON.stringify({ text }),
                 });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showMessage(`<div class="secret-phrase">${data.secret}</div>`, 'success');
-                    document.getElementById('password').value = '';
-                } else {
-                    showMessage(data.message || 'Authentication failed', 'error');
-                }
-            } catch (error) {
-                showMessage('Connection error. Please try again.', 'error');
-            } finally {
-                // Reset button state
-                submitBtn.disabled = false;
-                submitText.textContent = 'Unlock Secret';
-            }
-        });
 
-        function showMessage(message, type) {
-            const messageDiv = document.getElementById('message');
-            messageDiv.innerHTML = message;
-            messageDiv.className = `message ${type}`;
-            messageDiv.classList.add('show');
+                if (!response.ok) {
+                    throw new Error('Failed to add todo');
+                }
+
+                const newTodo = await response.json();
+                todos.unshift(newTodo);
+                input.value = '';
+                renderTodos();
+                showSuccess('Task added successfully!');
+            } catch (error) {
+                console.error('Error adding todo:', error);
+                showError('Failed to add task. Please try again.');
+            }
         }
 
-        async function checkHealth() {
+        // Toggle todo completion
+        async function toggleTodo(id) {
             try {
-                const response = await fetch('/health');
-                const data = await response.json();
-                const healthStatus = document.getElementById('healthStatus');
-                
-                if (data.status === 'healthy') {
-                    healthStatus.textContent = '● Server Online';
-                    healthStatus.className = 'health-status healthy';
-                } else {
-                    healthStatus.textContent = '● Server Issues';
-                    healthStatus.className = 'health-status unhealthy';
+                const todo = todos.find(t => t.id === id);
+                if (!todo) return;
+
+                const response = await fetch(`/api/todos/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ completed: !todo.completed }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to update todo');
                 }
+
+                const updatedTodo = await response.json();
+                const index = todos.findIndex(t => t.id === id);
+                todos[index] = updatedTodo;
+                renderTodos();
             } catch (error) {
-                const healthStatus = document.getElementById('healthStatus');
-                healthStatus.textContent = '● Server Offline';
-                healthStatus.className = 'health-status unhealthy';
+                console.error('Error toggling todo:', error);
+                showError('Failed to update task. Please try again.');
             }
         }
 
-        // Check health periodically
-        setInterval(checkHealth, 30000);
+        // Delete a todo
+        async function deleteTodo(id) {
+            if (!confirm('Are you sure you want to delete this task?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/todos/${id}`, {
+                    method: 'DELETE',
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to delete todo');
+                }
+
+                todos = todos.filter(todo => todo.id !== id);
+                renderTodos();
+                showSuccess('Task deleted successfully!');
+            } catch (error) {
+                console.error('Error deleting todo:', error);
+                showError('Failed to delete task. Please try again.');
+            }
+        }
+
+        // Render todos in the DOM
+        function renderTodos() {
+            const todosList = document.getElementById('todosList');
+            const todoStats = document.getElementById('todoStats');
+            
+            // Update stats
+            const completedCount = todos.filter(todo => todo.completed).length;
+            const totalCount = todos.length;
+            todoStats.textContent = `${totalCount} tasks, ${completedCount} completed`;
+
+            // Clear previous content
+            todosList.innerHTML = '';
+
+            if (todos.length === 0) {
+                todosList.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No tasks yet</h3>
+                        <p>Add your first task above to get started!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Render each todo
+            todos.forEach(todo => {
+                const todoItem = document.createElement('div');
+                todoItem.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+                
+                const createdAt = new Date(todo.created_at).toLocaleDateString();
+                
+                todoItem.innerHTML = `
+                    <div class="todo-content">
+                        <input type="checkbox" class="todo-checkbox" 
+                               ${todo.completed ? 'checked' : ''} 
+                               onchange="toggleTodo(${todo.id})">
+                        <div class="todo-text">${escapeHtml(todo.text)}</div>
+                        <div class="todo-actions">
+                            <button class="btn btn-danger btn-small" onclick="deleteTodo(${todo.id})">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                    <div class="todo-date">Created: ${createdAt}</div>
+                `;
+                
+                todosList.appendChild(todoItem);
+            });
+        }
+
+        // Utility functions
+        function showLoading() {
+            document.getElementById('todosList').innerHTML = `
+                <div class="loading">Loading tasks...</div>
+            `;
+        }
+
+        function showError(message) {
+            const existing = document.querySelector('.error');
+            if (existing) existing.remove();
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = message;
+            document.querySelector('.container').appendChild(errorDiv);
+            
+            setTimeout(() => errorDiv.remove(), 5000);
+        }
+
+        function showSuccess(message) {
+            const existing = document.querySelector('.success');
+            if (existing) existing.remove();
+            
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success';
+            successDiv.textContent = message;
+            document.querySelector('.container').appendChild(successDiv);
+            
+            setTimeout(() => successDiv.remove(), 3000);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
     </script>
 </body>
 </html> 

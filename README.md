@@ -1,163 +1,243 @@
-# Secret Phrase Access App
+# To-Do App
 
-A secure Node.js application with PostgreSQL backend that allows users to input a password and access a secret phrase. Features modern UI design with real-time server health monitoring.
+A modern, full-stack to-do application built with Node.js, Express, and PostgreSQL, designed to run on OpenShift Dev Spaces.
 
 ## Features
 
-- 🔐 **Secure Authentication**: Password-based access with bcrypt hashing
-- 🗄️ **PostgreSQL Backend**: Reliable database storage for passwords and secrets
-- 🎨 **Modern UI**: Beautiful, responsive interface with gradient background
-- 🔄 **Real-time Health Monitoring**: Server status indicator
-- ⚡ **Loading States**: Smooth user experience with loading animations
-- 🛡️ **Security**: Password hashing and SQL injection protection
+- ✅ Create, read, update, and delete tasks
+- 🎯 Mark tasks as complete/incomplete
+- 📱 Responsive design for mobile and desktop
+- 🚀 RESTful API with proper error handling
+- 🐘 PostgreSQL database for data persistence
+- 🔄 Real-time updates without page refresh
+- 🎨 Modern, clean UI with smooth animations
 
-## Prerequisites
+## Technology Stack
 
-Before running this application, make sure you have the following installed:
+- **Backend**: Node.js, Express.js
+- **Database**: PostgreSQL
+- **Frontend**: HTML, CSS, JavaScript (Vanilla)
+- **Development Environment**: OpenShift Dev Spaces
 
-- **Node.js** (v14 or higher)
-- **PostgreSQL** (v12 or higher)
-- **npm** (comes with Node.js)
+## Project Structure
 
-## Installation
+```
+todo-app/
+├── devfile.yaml          # OpenShift Dev Spaces configuration
+├── package.json          # Node.js dependencies and scripts
+├── server.js            # Express server and API endpoints
+├── init-db.js           # Database initialization script
+├── public/
+│   └── index.html       # Frontend application
+├── .gitignore          # Git ignore rules
+└── README.md           # Project documentation
+```
 
-1. **Clone or download this repository** to your local machine
+## API Endpoints
 
-2. **Install dependencies**:
+### Get All Todos
+- **GET** `/api/todos`
+- Returns all tasks ordered by creation date
+
+### Create Todo
+- **POST** `/api/todos`
+- Body: `{ "text": "Task description" }`
+- Creates a new task
+
+### Update Todo
+- **PUT** `/api/todos/:id`
+- Body: `{ "text": "Updated text", "completed": true/false }`
+- Updates an existing task
+
+### Delete Todo
+- **DELETE** `/api/todos/:id`
+- Deletes a specific task
+
+### Health Check
+- **GET** `/api/health`
+- Returns server and database status
+
+## Getting Started
+
+### Prerequisites
+
+- OpenShift Dev Spaces environment
+- Node.js 18 or higher
+- PostgreSQL 13 or higher
+
+### Installation
+
+1. **Clone the repository** (if using version control)
+   ```bash
+   git clone <repository-url>
+   cd todo-app
+   ```
+
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-3. **Set up PostgreSQL database**:
-   - Create a new database named `secret_app`
-   - Update database credentials in the code if needed
-
-4. **Configure environment variables** (optional):
-   Create a `.env` file in the root directory with the following variables:
-   ```
-   DB_HOST=localhost
-   DB_PORT=5432
-   DB_NAME=secret_app
-   DB_USER=postgres
-   DB_PASSWORD=your_password_here
-   PORT=3000
-   ```
-
-5. **Initialize the database**:
+3. **Initialize the database**
    ```bash
    npm run init-db
    ```
 
-## Usage
-
-1. **Start the server**:
-   ```bash
-   npm start
-   ```
-   
-   For development with auto-restart:
+4. **Start the development server**
    ```bash
    npm run dev
    ```
 
-2. **Access the application**:
-   Open your browser and navigate to `http://localhost:3000`
+The application will be available at `http://localhost:3000`
 
-3. **Enter the password**:
-   - Default password: `mysecretpassword123`
-   - The secret phrase will be revealed upon successful authentication
+### OpenShift Dev Spaces Setup
 
-## Default Configuration
+The project includes a `devfile.yaml` that automatically sets up:
+- Node.js 18 runtime environment
+- PostgreSQL 13 database
+- Required environment variables
+- Port forwarding for the web application
 
-- **Default Password**: `mysecretpassword123`
-- **Default Secret**: `The secret phrase is: "Welcome to the hidden world of secrets! 🔐"`
-- **Server Port**: `3000`
+When you open this project in OpenShift Dev Spaces, the environment will be automatically configured and dependencies will be installed.
 
-## API Endpoints
+## Environment Variables
 
-### Authentication
-- **POST** `/authenticate`
-  - Body: `{ "password": "your_password" }`
-  - Success: `{ "success": true, "secret": "secret_phrase" }`
-  - Error: `{ "success": false, "message": "error_message" }`
+The application uses the following environment variables (defaults provided):
 
-### Health Check
-- **GET** `/health`
-  - Response: `{ "status": "healthy", "database": "connected" }`
+- `DATABASE_URL`: PostgreSQL connection string
+- `POSTGRES_HOST`: Database host (default: `postgres`)
+- `POSTGRES_DB`: Database name (default: `todoapp`)
+- `POSTGRES_USER`: Database user (default: `postgres`)
+- `POSTGRES_PASSWORD`: Database password (default: `password`)
+- `POSTGRES_PORT`: Database port (default: `5432`)
+- `PORT`: Server port (default: `3000`)
+- `NODE_ENV`: Environment mode (default: `development`)
 
 ## Database Schema
 
-The application uses a simple PostgreSQL table:
+The application uses a single `todos` table with the following structure:
 
 ```sql
-CREATE TABLE secrets (
-    id SERIAL PRIMARY KEY,
-    password_hash VARCHAR(255) NOT NULL,
-    secret_phrase TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE todos (
+  id SERIAL PRIMARY KEY,
+  text TEXT NOT NULL,
+  completed BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
-## Security Features
-
-- **Password Hashing**: Uses bcrypt with salt rounds for secure password storage
-- **SQL Injection Protection**: Parameterized queries with pg library
-- **Input Validation**: Server-side validation for all inputs
-- **Error Handling**: Graceful error handling without exposing sensitive information
-
-## Customization
-
-### Changing the Password
-To change the default password, modify the `defaultPassword` variable in `init-db.js` and run:
-```bash
-npm run init-db
-```
-
-### Changing the Secret Phrase
-Update the secret phrase in the database insertion query in `init-db.js`.
-
-### UI Customization
-The frontend styles are contained in the `public/index.html` file. Modify the CSS in the `<style>` section to customize the appearance.
-
 ## Development
 
-### Project Structure
-```
-secret-phrase-app/
-├── server.js          # Main server file
-├── init-db.js         # Database initialization script
-├── package.json       # Dependencies and scripts
-├── public/
-│   └── index.html     # Frontend interface
-└── README.md          # This file
-```
+### Available Scripts
 
-### Running in Development Mode
-```bash
-npm run dev
-```
+- `npm start` - Start the production server
+- `npm run dev` - Start the development server with hot reload
+- `npm run init-db` - Initialize the database and create tables
 
-This uses `nodemon` for automatic server restarts when files change.
+### Development Commands (OpenShift Dev Spaces)
+
+The devfile includes these commands:
+- `install-deps` - Install npm dependencies
+- `start-dev` - Start the development server
+- `init-db` - Initialize the database
+
+## Features in Detail
+
+### Frontend Features
+- **Responsive Design**: Works seamlessly on desktop and mobile devices
+- **Real-time Updates**: Changes are reflected immediately without page refresh
+- **Error Handling**: User-friendly error messages and loading states
+- **Keyboard Support**: Press Enter to add new tasks
+- **Visual Feedback**: Smooth animations and hover effects
+
+### Backend Features
+- **RESTful API**: Clean, predictable API endpoints
+- **Input Validation**: Validates all incoming data
+- **Error Handling**: Comprehensive error handling with appropriate HTTP status codes
+- **Database Connection Pooling**: Efficient database connection management
+- **Graceful Shutdown**: Proper cleanup when the server is stopped
+
+### Security Features
+- **Input Sanitization**: Prevents XSS attacks by escaping HTML
+- **SQL Injection Prevention**: Uses parameterized queries
+- **CORS Protection**: Configurable CORS settings
 
 ## Troubleshooting
 
-### Database Connection Issues
-- Ensure PostgreSQL is running
-- Check database credentials in the configuration
-- Verify the database `secret_app` exists
+### Common Issues
 
-### Port Already in Use
-- Change the `PORT` environment variable or modify the default port in `server.js`
+1. **Database Connection Error**
+   - Ensure PostgreSQL is running
+   - Check database credentials in environment variables
+   - Verify network connectivity to database
 
-### NPM Install Issues
-- Make sure you have Node.js v14 or higher
-- Clear npm cache: `npm cache clean --force`
-- Delete `node_modules` and run `npm install` again
+2. **Port Already in Use**
+   - Check if another application is using port 3000
+   - Change the PORT environment variable if needed
+
+3. **Dependencies Not Installing**
+   - Clear npm cache: `npm cache clean --force`
+   - Delete node_modules and reinstall: `rm -rf node_modules && npm install`
+
+### Database Issues
+
+1. **Tables Not Created**
+   - Run the database initialization: `npm run init-db`
+   - Check database permissions
+
+2. **Sample Data Not Inserted**
+   - The init script only adds sample data if it doesn't exist
+   - Check database logs for any errors
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Support
 
-For issues or questions, please check the troubleshooting section above or review the code comments for additional guidance. 
+For issues and questions:
+1. Check the troubleshooting section above
+2. Review the application logs
+3. Verify your environment setup
+4. Check the OpenShift Dev Spaces documentation
+
+## Deployment
+
+### OpenShift Dev Spaces
+The application is designed to run in OpenShift Dev Spaces out of the box. The devfile.yaml handles all the configuration automatically.
+
+### Local Development
+For local development without OpenShift Dev Spaces:
+1. Install PostgreSQL locally
+2. Update environment variables to point to your local database
+3. Run the application using npm scripts
+
+### Production Deployment
+For production deployment:
+1. Set up a PostgreSQL database
+2. Configure environment variables for production
+3. Use `npm start` to run the production server
+4. Set up reverse proxy (nginx, Apache) if needed
+5. Configure SSL/TLS certificates
+
+## Architecture
+
+The application follows a simple three-tier architecture:
+1. **Presentation Layer**: HTML/CSS/JavaScript frontend
+2. **Application Layer**: Node.js/Express API server
+3. **Data Layer**: PostgreSQL database
+
+This architecture provides:
+- Clear separation of concerns
+- Scalability for future enhancements
+- Easy maintenance and testing
+- Flexibility for different deployment scenarios 
