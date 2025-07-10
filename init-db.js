@@ -1,58 +1,86 @@
-const { Pool } = require('pg');
+const { Pool, Client } = require('pg');
 
-// Database connection configuration
-const pool = new Pool({
-  user: process.env.POSTGRES_USER || 'postgres',
-  host: process.env.POSTGRES_HOST || 'postgres',
-  database: process.env.POSTGRES_DB || 'todoapp',
-  password: process.env.POSTGRES_PASSWORD || 'password',
-  port: process.env.POSTGRES_PORT || 5432,
-});
+const dbName = process.env.POSTGRES_DB || 'todoapp';
+const dbUser = process.env.POSTGRES_USER || 'postgres';
+const dbPassword = process.env.POSTGRES_PASSWORD || 'password';
+const dbHost = process.env.POSTGRES_HOST || 'postgres';
+const dbPort = process.env.POSTGRES_PORT || 5432;
+
+const adminConfig = {
+    user: dbUser,
+    host: dbHost,
+    database: 'postgres',
+    password: dbPassword,
+    port: dbPort,
+};
+
+const appConfig = {
+    user: dbUser,
+    host: dbHost,
+    database: dbName,
+    password: dbPassword,
+    port: dbPort,
+};
 
 async function initializeDatabase() {
-  try {
-    console.log('Initializing database...');
-    
-    // Create the todos table if it doesn't exist
-    const createTableQuery = `
-      CREATE TABLE IF NOT EXISTS todos (
-        id SERIAL PRIMARY KEY,
-        text TEXT NOT NULL,
-        completed BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `;
-    
-    await pool.query(createTableQuery);
-    console.log('Database initialized successfully!');
-    
-    // Insert some sample data
-    const sampleTodos = [
-      { text: 'Learn Node.js', completed: false },
-      { text: 'Build a to-do app', completed: false },
-      { text: 'Deploy to OpenShift', completed: false }
-    ];
-    
-    for (const todo of sampleTodos) {
-      const checkQuery = 'SELECT COUNT(*) FROM todos WHERE text = $1';
-      const result = await pool.query(checkQuery, [todo.text]);
-      
-      if (parseInt(result.rows[0].count) === 0) {
-        const insertQuery = 'INSERT INTO todos (text, completed) VALUES ($1, $2)';
-        await pool.query(insertQuery, [todo.text, todo.completed]);
-        console.log(`Added sample todo: ${todo.text}`);
-      }
+    const client = new Client(adminConfig);
+    try {
+        await client.connect();
+        const res = await client.query(`SELECT 1 FROM pg_database WHERE datname = $1`, [dbName]);
+        if (res.rowCount === 0) {
+            console.log(`Database '${dbName}' not found. Creating it...`);
+            await client.query(`CREATE DATABASE ${dbName}`);
+            console.log(`Database '${dbName}' created.`);
+        } else {
+            console.log(`Database '${dbName}' already exists.`);
+        }
+    } catch (error) {
+        console.error('Error creating database:', error);
+        process.exit(1);
+    } finally {
+        await client.end();
     }
-    
-    console.log('Database setup complete!');
-    
-  } catch (error) {
-    console.error('Error initializing database:', error);
-  } finally {
-    await pool.end();
-  }
+
+    const pool = new Pool(appConfig);
+    try {
+        console.log(`Connecting to database '${dbName}' to initialize schema...`);
+        const createTableQuery = `
+          CREATE TABLE IF NOT EXISTS todos (
+            id SERIAL PRIMARY KEY,
+            text TEXT NOT NULL,
+            completed BOOLEAN DEFAULT FALSE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );
+        `;
+        await pool.query(createTableQuery);
+        console.log('Table "todos" is ready.');
+
+        const sampleTodos = [
+          { text: 'Learn Node.js', completed: false },
+          { text: 'Build a to-do app', completed: false },
+          { text: 'Deploy to OpenShift', completed: false }
+        ];
+        
+        for (const todo of sampleTodos) {
+            const checkQuery = 'SELECT COUNT(*) FROM todos WHERE text = $1';
+            const result = await pool.query(checkQuery, [todo.text]);
+            
+            if (parseInt(result.rows[0].count) === 0) {
+              const insertQuery = 'INSERT INTO todos (text, completed) VALUES ($1, $2)';
+              await pool.query(insertQuery, [todo.text, todo.completed]);
+              console.log(`Added sample todo: ${todo.text}`);
+            }
+        }
+        
+        console.log('Database setup complete!');
+
+    } catch (error) {
+        console.error('Error initializing tables:', error);
+        process.exit(1);
+    } finally {
+        await pool.end();
+    }
 }
 
-// Run the initialization
 initializeDatabase(); 
