@@ -56,23 +56,6 @@ async function initializeDatabase() {
         await pool.query(createTableQuery);
         console.log('Table "todos" is ready.');
 
-        const sampleTodos = [
-          { text: 'Learn Node.js', completed: false },
-          { text: 'Build a to-do app', completed: false },
-          { text: 'Deploy to OpenShift', completed: false }
-        ];
-        
-        for (const todo of sampleTodos) {
-            const checkQuery = 'SELECT COUNT(*) FROM todos WHERE text = $1';
-            const result = await pool.query(checkQuery, [todo.text]);
-            
-            if (parseInt(result.rows[0].count) === 0) {
-              const insertQuery = 'INSERT INTO todos (text, completed) VALUES ($1, $2)';
-              await pool.query(insertQuery, [todo.text, todo.completed]);
-              console.log(`Added sample todo: ${todo.text}`);
-            }
-        }
-        
         console.log('Database setup complete!');
 
     } catch (error) {
