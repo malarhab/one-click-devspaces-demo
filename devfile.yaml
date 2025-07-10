@@ -91,7 +91,4 @@ commands:
     label: Start Production Server
     workingDir: /projects
   id: start-app
-events:
-  postStart:
-    - install-deps
-    - init-db
+
