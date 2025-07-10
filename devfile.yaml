@@ -1,4 +1,6 @@
 schemaVersion: 2.2.0
+attributes:
+  controller.devfile.io/storage-type: per-workspace
 metadata:
   name: todo-app
 
@@ -8,6 +10,10 @@ components:
       image: node:18
       mountSources: true
       sourceMapping: /projects
+      memoryRequest: 512Mi
+      memoryLimit: 2Gi
+      cpuRequest: 100m
+      cpuLimit: 1000m
       endpoints:
         - name: web
           targetPort: 3000
@@ -18,12 +24,25 @@ components:
           value: postgres://postgres:password@postgres:5432/todoapp
         - name: NODE_ENV
           value: development
-      command: ['/bin/sh']
-      args: ['-c', 'tail -f /dev/null']
+        - name: POSTGRES_HOST
+          value: postgres
+        - name: POSTGRES_DB
+          value: todoapp
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          value: password
+      volumeMounts:
+        - name: npm-cache
+          path: /home/node/.npm
 
   - name: postgres
     container:
       image: postgres:13
+      memoryRequest: 256Mi
+      memoryLimit: 1Gi
+      cpuRequest: 50m
+      cpuLimit: 500m
       env:
         - name: POSTGRES_DB
           value: todoapp
@@ -44,25 +63,31 @@ components:
     volume:
       size: 1Gi
 
+  - name: npm-cache
+    volume:
+      size: 512Mi
+
 commands:
   - id: install-deps
     exec:
       component: nodejs
       commandLine: npm install
       workingDir: /projects
+      group:
+        kind: build
+        isDefault: true
 
   - id: start-dev
     exec:
       component: nodejs
       commandLine: npm run dev
       workingDir: /projects
+      group:
+        kind: run
+        isDefault: true
 
   - id: init-db
     exec:
       component: nodejs
       commandLine: node init-db.js
-      workingDir: /projects
-
-events:
-  postStart:
-    - install-deps 
+      workingDir: /projects 
