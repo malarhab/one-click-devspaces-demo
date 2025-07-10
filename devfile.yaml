@@ -3,123 +3,95 @@ attributes:
   controller.devfile.io/storage-type: per-workspace
 metadata:
   name: todo-app
-
 components:
-  - name: dev-tools
-    container:
-      image: registry.redhat.io/ubi8/nodejs-18:latest
-      mountSources: true
-      sourceMapping: /projects
-      memoryRequest: 512Mi
-      memoryLimit: 2Gi
-      cpuRequest: 100m
-      cpuLimit: 1000m
-      endpoints:
-        - name: web
-          targetPort: 3000
-          protocol: http
-          exposure: public
-      env:
-        - name: DATABASE_URL
-          value: postgres://postgres:postgres@postgres:5432/postgres
-        - name: NODE_ENV
-          value: development
-        - name: POSTGRES_HOST
-          value: postgres
-        - name: POSTGRES_DB
-          value: postgres
-        - name: POSTGRES_USER
-          value: postgres
-        - name: POSTGRES_PASSWORD
-          value: postgres
-        - name: HOME
-          value: /projects/home
-      volumeMounts:
-        - name: npm-cache
-          path: /opt/app-root/src/.npm
-
-  - name: prep-workspace
-    container:
-      image: registry.redhat.io/ubi8/ubi-minimal:latest
-      mountSources: true
-      sourceMapping: /projects
-      memoryRequest: 128Mi
-      memoryLimit: 256Mi
-      cpuRequest: 10m
-      cpuLimit: 200m
-      command:
-        - /bin/bash
-      args:
-        - '-c'
-        - >-
-          mkdir -p /projects/home /projects/bin && 
-          echo "Workspace prepared successfully"
-      env:
-        - name: HOME
-          value: /projects/home
-
-  - name: postgres
-    container:
-      image: quay.io/sclorg/postgresql-15-c9s:c9s
-      cpuRequest: 10m
-      cpuLimit: 500m
-      memoryRequest: 128M
-      memoryLimit: 512M
-      sourceMapping: /projects
-      mountSources: true
-      env:
-        - name: POSTGRESQL_USER
-          value: postgres
-        - name: POSTGRESQL_PASSWORD
-          value: postgres
-        - name: POSTGRESQL_DATABASE
-          value: postgres
-      volumeMounts:
-        - name: pgdata
-          path: /var/lib/pgsql/data
-      endpoints:
-        - name: postgres
-          targetPort: 5432
-          exposure: internal
-
-  - name: pgdata
-    volume:
-      size: 2Gi
-
-  - name: npm-cache
-    volume:
-      size: 512Mi
-
+- name: dev-tools
+  container:
+    image: registry.redhat.io/ubi8/nodejs-18:latest
+    memoryRequest: 512Mi
+    memoryLimit: 2Gi
+    cpuRequest: 100m
+    cpuLimit: 1000m
+    mountSources: true
+    sourceMapping: /projects
+    env:
+    - name: PORT
+      value: '3000'
+    - name: POSTGRES_USER
+      value: postgres
+    - name: POSTGRES_PASSWORD
+      value: password
+    - name: POSTGRES_HOST
+      value: localhost
+    - name: POSTGRES_DB
+      value: todoapp
+    - name: POSTGRES_PORT
+      value: '5432'
+    endpoints:
+    - name: todo-app
+      targetPort: 3000
+      exposure: public
+      protocol: https
+- name: postgres
+  container:
+    image: registry.redhat.io/rhel8/postgresql-15:latest
+    cpuRequest: 100m
+    cpuLimit: 500m
+    memoryRequest: 256Mi
+    memoryLimit: 512Mi
+    mountSources: true
+    sourceMapping: /projects
+    env:
+    - name: POSTGRESQL_USER
+      value: postgres
+    - name: POSTGRESQL_PASSWORD
+      value: password
+    - name: POSTGRESQL_DATABASE
+      value: todoapp
+    volumeMounts:
+    - name: pgdata
+      path: /var/lib/pgsql/data
+    endpoints:
+    - name: postgres
+      targetPort: 5432
+      exposure: internal
+- volume:
+    size: 1Gi
+  name: pgdata
 commands:
-  - id: prep-workspace
-    apply:
-      component: prep-workspace
-      label: Prepare workspace
-
-  - id: install-deps
-    exec:
-      component: dev-tools
-      commandLine: npm install
-      workingDir: /projects
-      group:
-        kind: build
-        isDefault: true
-
-  - id: start-dev
-    exec:
-      component: dev-tools
-      commandLine: npm run dev
-      workingDir: /projects
-      group:
-        kind: run
-        isDefault: true
-
-  - id: init-db
-    exec:
-      component: dev-tools
-      commandLine: node init-db.js
-      workingDir: /projects
-
+- exec:
+    commandLine: npm install
+    component: dev-tools
+    group:
+      kind: build
+      isDefault: true
+    workingDir: /projects
+  id: install-deps
+- exec:
+    commandLine: npm run init-db
+    component: dev-tools
+    group:
+      kind: build
+    label: Initialize Database
+    workingDir: /projects
+  id: init-db
+- exec:
+    commandLine: npm run dev
+    component: dev-tools
+    group:
+      kind: run
+      isDefault: true
+    label: Start Development Server
+    workingDir: /projects
+  id: dev-mode
+- exec:
+    commandLine: npm start
+    component: dev-tools
+    group:
+      kind: run
+    label: Start Production Server
+    workingDir: /projects
+  id: start-app
 events:
-  preStart:
-    - prep-workspace 
+  postStart:
+    - install-deps
+    - init-db
