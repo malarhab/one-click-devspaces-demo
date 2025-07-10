@@ -5,9 +5,9 @@ metadata:
   name: todo-app
 
 components:
-  - name: nodejs
+  - name: dev-tools
     container:
-      image: node:18
+      image: registry.redhat.io/ubi8/nodejs-18:latest
       mountSources: true
       sourceMapping: /projects
       memoryRequest: 512Mi
@@ -32,23 +32,47 @@ components:
           value: postgres
         - name: POSTGRES_PASSWORD
           value: password
+        - name: HOME
+          value: /projects/home
       volumeMounts:
         - name: npm-cache
-          path: /home/node/.npm
+          path: /opt/app-root/src/.npm
+
+  - name: prep-workspace
+    container:
+      image: registry.redhat.io/ubi8/ubi-minimal:latest
+      mountSources: true
+      sourceMapping: /projects
+      memoryRequest: 128Mi
+      memoryLimit: 256Mi
+      cpuRequest: 10m
+      cpuLimit: 200m
+      command:
+        - /bin/bash
+      args:
+        - '-c'
+        - >-
+          mkdir -p /projects/home /projects/bin && 
+          echo "Workspace prepared successfully"
+      env:
+        - name: HOME
+          value: /projects/home
 
   - name: postgres
     container:
-      image: postgres:13
+      image: quay.io/sclorg/postgresql-15-c9s:c9s
       memoryRequest: 256Mi
       memoryLimit: 1Gi
       cpuRequest: 50m
       cpuLimit: 500m
+      mountSources: true
+      sourceMapping: /projects
       env:
-        - name: POSTGRES_DB
+        - name: POSTGRESQL_DATABASE
           value: todoapp
-        - name: POSTGRES_USER
+        - name: POSTGRESQL_USER
           value: postgres
-        - name: POSTGRES_PASSWORD
+        - name: POSTGRESQL_PASSWORD
           value: password
       endpoints:
         - name: database
@@ -57,7 +81,7 @@ components:
           exposure: internal
       volumeMounts:
         - name: postgres-data
-          path: /var/lib/postgresql/data
+          path: /var/lib/pgsql/data
 
   - name: postgres-data
     volume:
@@ -68,9 +92,14 @@ components:
       size: 512Mi
 
 commands:
+  - id: prep-workspace
+    apply:
+      component: prep-workspace
+      label: Prepare workspace
+
   - id: install-deps
     exec:
-      component: nodejs
+      component: dev-tools
       commandLine: npm install
       workingDir: /projects
       group:
@@ -79,7 +108,7 @@ commands:
 
   - id: start-dev
     exec:
-      component: nodejs
+      component: dev-tools
       commandLine: npm run dev
       workingDir: /projects
       group:
@@ -88,6 +117,10 @@ commands:
 
   - id: init-db
     exec:
-      component: nodejs
+      component: dev-tools
       commandLine: node init-db.js
-      workingDir: /projects 
+      workingDir: /projects
+
+events:
+  preStart:
+    - prep-workspace 
