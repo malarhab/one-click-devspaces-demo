@@ -75,15 +75,6 @@ commands:
     workingDir: /projects
   id: init-db
 - exec:
-    commandLine: npm run dev
-    component: dev-tools
-    group:
-      kind: run
-      isDefault: true
-    label: Start Development Server
-    workingDir: /projects
-  id: dev-mode
-- exec:
     commandLine: npm start
     component: dev-tools
     group:
