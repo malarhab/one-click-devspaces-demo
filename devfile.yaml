@@ -21,17 +21,17 @@ components:
           exposure: public
       env:
         - name: DATABASE_URL
-          value: postgres://postgres:password@postgres:5432/todoapp
+          value: postgres://postgres:postgres@postgres:5432/postgres
         - name: NODE_ENV
           value: development
         - name: POSTGRES_HOST
           value: postgres
         - name: POSTGRES_DB
-          value: todoapp
+          value: postgres
         - name: POSTGRES_USER
           value: postgres
         - name: POSTGRES_PASSWORD
-          value: password
+          value: postgres
         - name: HOME
           value: /projects/home
       volumeMounts:
@@ -61,31 +61,30 @@ components:
   - name: postgres
     container:
       image: quay.io/sclorg/postgresql-15-c9s:c9s
-      memoryRequest: 256Mi
-      memoryLimit: 1Gi
-      cpuRequest: 50m
+      cpuRequest: 10m
       cpuLimit: 500m
-      mountSources: true
+      memoryRequest: 128M
+      memoryLimit: 512M
       sourceMapping: /projects
+      mountSources: true
       env:
-        - name: POSTGRESQL_DATABASE
-          value: todoapp
         - name: POSTGRESQL_USER
           value: postgres
         - name: POSTGRESQL_PASSWORD
-          value: password
-      endpoints:
-        - name: database
-          targetPort: 5432
-          protocol: tcp
-          exposure: internal
+          value: postgres
+        - name: POSTGRESQL_DATABASE
+          value: postgres
       volumeMounts:
-        - name: postgres-data
+        - name: pgdata
           path: /var/lib/pgsql/data
+      endpoints:
+        - name: postgres
+          targetPort: 5432
+          exposure: internal
 
-  - name: postgres-data
+  - name: pgdata
     volume:
-      size: 1Gi
+      size: 2Gi
 
   - name: npm-cache
     volume:
