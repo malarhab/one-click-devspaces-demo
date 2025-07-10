@@ -18,7 +18,6 @@ components:
           value: postgres://postgres:password@postgres:5432/todoapp
         - name: NODE_ENV
           value: development
-      workingDir: /projects
       command: ['/bin/sh']
       args: ['-c', 'tail -f /dev/null']
 
