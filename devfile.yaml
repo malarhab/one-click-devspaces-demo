@@ -6,7 +6,7 @@ metadata:
 components:
 - name: dev-tools
   container:
-    image: registry.redhat.io/ubi8/nodejs-18:latest
+    image: quay.io/devfile/universal-developer-image:ubi9-latest
     memoryRequest: 512Mi
     memoryLimit: 2Gi
     cpuRequest: 100m
