@@ -21,7 +21,7 @@ components:
     - name: POSTGRES_PASSWORD
       value: password
     - name: POSTGRES_HOST
-      value: postgres
+      value: localhost
     - name: POSTGRES_DB
       value: todoapp
     - name: POSTGRES_PORT
