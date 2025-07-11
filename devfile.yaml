@@ -57,29 +57,3 @@ components:
 - volume:
     size: 1Gi
   name: pgdata
-commands:
-- exec:
-    commandLine: npm install
-    component: dev-tools
-    group:
-      kind: build
-      isDefault: true
-    workingDir: /projects
-  id: install-deps
-- exec:
-    commandLine: npm run init-db
-    component: dev-tools
-    group:
-      kind: build
-    label: Initialize Database
-    workingDir: /projects
-  id: init-db
-- exec:
-    commandLine: npm start
-    component: dev-tools
-    group:
-      kind: run
-    label: Start Production Server
-    workingDir: /projects
-  id: start-app
-
