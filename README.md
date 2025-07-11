@@ -2,8 +2,7 @@ To-Do App
 
 
 #Run in DevSpaces!
-[![Contribute](https://www.eclipse.org/che/contribute.svg)]
-(https://https://devspaces.apps.rm3.7wse.p1.openshiftapps.com/#https://https://github.com/malarhab/one-click-devspaces-demo.git)
+
 
 ## Technology Stack
 
