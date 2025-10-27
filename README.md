@@ -35,23 +35,17 @@ todo-app/
 
 ### Install and Run The App
 
-1. **Clone the repository** (if using version control)
-   ```bash
-   git clone <repository-url>
-   cd todo-app
-   ```
-
-2. **Install dependencies**
+1. **Install dependencies**
    ```bash
    npm install
    ```
 
-3. **Initialize the database**
+2. **Initialize the database**
    ```bash
    npm run init-db
    ```
 
-4. **Start the development server**
+3. **Start the development server**
    ```bash
    npm run dev
    ```
