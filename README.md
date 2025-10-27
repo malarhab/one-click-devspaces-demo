@@ -25,30 +25,6 @@ todo-app/
 └── README.md           # Project documentation
 ```
 
-## API Endpoints
-
-### Get All Todos
-- **GET** `/api/todos`
-- Returns all tasks ordered by creation date
-
-### Create Todo
-- **POST** `/api/todos`
-- Body: `{ "text": "Task description" }`
-- Creates a new task
-
-### Update Todo
-- **PUT** `/api/todos/:id`
-- Body: `{ "text": "Updated text", "completed": true/false }`
-- Updates an existing task
-
-### Delete Todo
-- **DELETE** `/api/todos/:id`
-- Deletes a specific task
-
-### Health Check
-- **GET** `/api/health`
-- Returns server and database status
-
 ## Getting Started
 
 ### Prerequisites
@@ -57,7 +33,7 @@ todo-app/
 - Node.js 18 or higher
 - PostgreSQL 13 or higher
 
-### Installation
+### Install and Run The App
 
 1. **Clone the repository** (if using version control)
    ```bash
@@ -80,7 +56,6 @@ todo-app/
    npm run dev
    ```
 
-The application will be available at `http://localhost:3000`
 
 ### OpenShift Dev Spaces Setup
 
@@ -105,19 +80,6 @@ The application uses the following environment variables (defaults provided):
 - `PORT`: Server port (default: `3000`)
 - `NODE_ENV`: Environment mode (default: `development`)
 
-## Database Schema
-
-The application uses a single `todos` table with the following structure:
-
-```sql
-CREATE TABLE todos (
-  id SERIAL PRIMARY KEY,
-  text TEXT NOT NULL,
-  completed BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
 
 ## Development
 
@@ -126,27 +88,3 @@ CREATE TABLE todos (
 - `npm start` - Start the production server
 - `npm run dev` - Start the development server with hot reload
 - `npm run init-db` - Initialize the database and create tables
-
-### Development Commands (OpenShift Dev Spaces)
-
-The devfile includes these commands:
-- `install-deps` - Install npm dependencies
-- `start-dev` - Start the development server
-- `init-db` - Initialize the database
-
-## Features in Detail
-
-
-
-## Troubleshooting
-
-### Common Issues
- **Dependencies Not Installing**
-   - Clear npm cache: `npm cache clean --force`
-   - Delete node_modules and reinstall: `rm -rf node_modules && npm install`
-
-### Database Issues
-
-1. **Tables Not Created**
-   - Run the database initialization: `npm run init-db`
-   - Check database permissions
