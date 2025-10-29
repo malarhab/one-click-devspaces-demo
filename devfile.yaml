@@ -12,7 +12,6 @@ components:
     cpuRequest: 100m
     cpuLimit: 1000m
     mountSources: true
-    sourceMapping: /projects
     env:
     - name: PORT
       value: '3000'
@@ -39,7 +38,6 @@ components:
     memoryRequest: 256Mi
     memoryLimit: 512Mi
     mountSources: true
-    sourceMapping: /projects
     env:
     - name: POSTGRESQL_USER
       value: postgres
