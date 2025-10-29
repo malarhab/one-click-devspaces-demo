@@ -10,7 +10,7 @@ components:
     memoryRequest: 512Mi # optional
     memoryLimit: 2Gi # optional
     cpuRequest: 100m # optional
-    cpuLimit: 3000m # optional
+    cpuLimit: 4000m # optional
     mountSources: true
     env:
     - name: PORT
