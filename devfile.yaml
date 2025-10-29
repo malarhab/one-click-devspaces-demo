@@ -7,10 +7,10 @@ components:
 - name: dev-tools
   container:
     image: quay.io/devfile/universal-developer-image:ubi9-latest
-    memoryRequest: 512Mi
-    memoryLimit: 2Gi
-    cpuRequest: 100m
-    cpuLimit: 1000m
+    memoryRequest: 512Mi # optional
+    memoryLimit: 2Gi # optional
+    cpuRequest: 100m # optional
+    cpuLimit: 1000m # optional
     mountSources: true
     env:
     - name: PORT
@@ -33,10 +33,10 @@ components:
 - name: postgres
   container:
     image: registry.redhat.io/rhel8/postgresql-15:latest
-    cpuRequest: 100m
-    cpuLimit: 500m
-    memoryRequest: 256Mi
-    memoryLimit: 512Mi
+    cpuRequest: 100m # optional
+    cpuLimit: 500m # optional
+    memoryRequest: 256Mi # optional
+    memoryLimit: 512Mi # optional
     mountSources: true
     env:
     - name: POSTGRESQL_USER
@@ -45,13 +45,13 @@ components:
       value: password
     - name: POSTGRESQL_DATABASE
       value: todoapp
-    volumeMounts:
-    - name: pgdata
-      path: /var/lib/pgsql/data
-    endpoints:
-    - name: postgres
-      targetPort: 5432
-      exposure: internal
-- volume:
-    size: 1Gi
-  name: pgdata
+#     volumeMounts: # Only needed if you want postgress data to persist across workspace restarts
+#     - name: pgdata
+#       path: /var/lib/pgsql/data
+#     endpoints:
+#     - name: postgres
+#       targetPort: 5432
+#       exposure: internal
+# - volume:
+#     size: 1Gi
+#   name: pgdata
