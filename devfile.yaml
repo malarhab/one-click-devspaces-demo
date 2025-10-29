@@ -45,13 +45,13 @@ components:
       value: password
     - name: POSTGRESQL_DATABASE
       value: todoapp
-    # volumeMounts: # Only needed if you want postgress data to persist across workspace restarts
-    # - name: pgdata
-    #   path: /var/lib/pgsql/data
+    volumeMounts:
+    - name: pgdata
+      path: /var/lib/pgsql/data
     endpoints:
     - name: postgres
       targetPort: 5432
       exposure: internal
-# - volume:
-#     size: 1Gi
-#   name: pgdata
+- volume:
+    size: 1Gi
+  name: pgdata
