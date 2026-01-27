@@ -4,7 +4,7 @@ id: che-incubator/che-code/latest
 # Override specific container settings
 override:
   containers:
-    - name: che-code  # This is the specific name of the editor container
+    - name: che-gateway  # This is the specific name of the editor container
       env:
         - name: VSCODE_TRUSTED_EXTENSIONS
           value: '["ms-mssql.mssql","ms-azuretools.vscode-azureresourcegroups"]'
