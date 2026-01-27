@@ -30,28 +30,6 @@ components:
       targetPort: 3000
       exposure: public
       protocol: https
-- name: postgres
-  container:
-    image: registry.redhat.io/rhel8/postgresql-15:latest
-    cpuRequest: 100m # optional
-    cpuLimit: 500m # optional
-    memoryRequest: 256Mi # optional
-    memoryLimit: 512Mi # optional
-    mountSources: true
-    env:
-    - name: POSTGRESQL_USER
-      value: postgres
-    - name: POSTGRESQL_PASSWORD
-      value: password
-    - name: POSTGRESQL_DATABASE
-      value: todoapp
-    volumeMounts:
-    - name: pgdata
-      path: /var/lib/pgsql/data
-    endpoints:
-    - name: postgres
-      targetPort: 5432
-      exposure: internal
 - name: che-code
     container:
       # This image matches the default VS Code editor in Dev Spaces
@@ -63,13 +41,10 @@ components:
       volumeMounts:
         - name: checode-volume
           path: /checode
-    
 commands:
   - id: login-azure
     exec:
       component: tools
       commandLine: "az login --use-device-code"
       workingDir: /projects
-- volume:
-    size: 1Gi
-  name: pgdata
+
