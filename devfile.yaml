@@ -25,6 +25,8 @@ components:
       value: todoapp
     - name: POSTGRES_PORT
       value: '5432'
+    - name: VSCODE_TRUSTED_EXTENSIONS # line added
+      value: "ms-mssql.mssql;ms-azuretools.vscode-azureresourcegroups" # line added
     endpoints:
     - name: todo-app
       targetPort: 3000
