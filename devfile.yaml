@@ -1,9 +1,6 @@
 schemaVersion: 2.2.0
 attributes:
   controller.devfile.io/storage-type: per-workspace
-  workspaceEnv: # added section
-    - name: VSCODE_TRUSTED_EXTENSIONS
-      value: '["ms-mssql.mssql","ms-azuretools.vscode-azureresourcegroups"]'
 metadata:
   name: todo-app
 components:
