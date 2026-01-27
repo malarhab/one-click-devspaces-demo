@@ -1,6 +1,9 @@
 schemaVersion: 2.2.0
 attributes:
   controller.devfile.io/storage-type: per-workspace
+  workspaceEnv: # added section
+    - name: VSCODE_TRUSTED_EXTENSIONS
+      value: '["ms-mssql.mssql","ms-azuretools.vscode-azureresourcegroups"]'
 metadata:
   name: todo-app
 components:
@@ -25,8 +28,6 @@ components:
       value: todoapp
     - name: POSTGRES_PORT
       value: '5432'
-    - name: VSCODE_TRUSTED_EXTENSIONS # line added
-      value: '["ms-mssql.mssql","ms-azuretools.vscode-azureresourcegroups"]' # line added
     endpoints:
     - name: todo-app
       targetPort: 3000
