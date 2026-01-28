@@ -1,8 +1,9 @@
+
 schemaVersion: 2.3.0
 metadata:
   name: che-idea
   displayName: IntelliJ IDEA Community
-  description: JetBrains IntelliJ IDEA Community IDE for Eclipse Che
+  description: JetBrains IntelliJ IDEA Community IDE for Eclipse Che - next
   tags:
     - Deprecated
   attributes:
@@ -10,8 +11,8 @@ metadata:
       - x86_64
       - arm64
     publisher: che-incubator
-    version: latest
-    title: JetBrains IntelliJ IDEA Community IDE for Eclipse Che
+    version: next
+    title: JetBrains IntelliJ IDEA Community IDE for Eclipse Che - next
     repository: https://github.com/che-incubator/jetbrains-editor-images
     firstPublicationDate: '2022-01-11'
     iconMediatype: image/svg+xml
@@ -140,7 +141,7 @@ components:
     volume: {}
   - name: che-idea-injector
     container:
-      image: quay.io/che-incubator/che-idea:latest
+      image: quay.io/che-incubator/che-idea:next
       command:
         - /projector/entrypoint-init-container.sh
       env:
