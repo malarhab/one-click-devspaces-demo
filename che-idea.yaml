@@ -92,7 +92,7 @@ components:
     volume: {}
   - name: che-idea-injector
     container:
-      image: quay.io/che-incubator/che-idea:next
+      image: quay.io/che-incubator/che-idea:latest
       command:
         - /projector/entrypoint-init-container.sh
       env:
